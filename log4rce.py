@@ -33,7 +33,7 @@ RAUTO: bool = False
 
 # TODO: Set to Target class/OS. 
 # - Linux will encapsulate your payload in `/bin/sh -c ...`.
-TARGET: Literal["Linux", "Any"] = "Linux"
+TARGET: Literal["Linux", "Any"] = "Any"
 
 # TODO: Set to class name being run (default to Exploit).
 CLASS_NAME: str = "Exploit"
