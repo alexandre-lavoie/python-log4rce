@@ -39,7 +39,7 @@ CLASS_NAME: str = "Exploit"
 PAYLOAD: str = """chromium"""
 
 # TODO: Set to True if you want to automatically run the `send_juni` method.
-RAUTO: bool = True
+RAUTO: bool = False
 
 ### Automation ###
 
