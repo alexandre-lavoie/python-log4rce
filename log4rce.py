@@ -205,7 +205,7 @@ def log4shell():
     ldap_process = multiprocessing.Process(target=ldap)
     ldap_process.start()
 
-    logging.info(f"HTTP -> {CODEBASE_URL}")
+    logging.info(f"HTTP -> {WEB_URL}")
     web_process = multiprocessing.Process(target=web)
     web_process.start()
 
