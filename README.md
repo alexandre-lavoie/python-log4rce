@@ -1,6 +1,6 @@
 # Python Log4RCE
 
-A pure vanilla Python3 PoC for [CVE-2021-44228](https://cve.mitre.org/cgi-bin/cvename.cgi?name=2021-44228).
+An all-in-one pure Python3 PoC for [CVE-2021-44228](https://cve.mitre.org/cgi-bin/cvename.cgi?name=2021-44228).
 
 ## Configure
 
