@@ -144,6 +144,10 @@ class LDAPHandler(socketserver.BaseRequestHandler):
         time.sleep(0.5)
 
         query = self.request.recv(8096)
+
+        if len(query) < 10:
+            return
+
         query_name = query[9:9+query[8:][0]].decode()
 
         response = LDAPResponse(query_name, {
