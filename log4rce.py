@@ -260,7 +260,8 @@ class Log4RCE():
 
         self.exploit()
 
-        time.sleep(1)
+        # TODO: Increase time if no answer.
+        time.sleep(5)
 
         for process in self.__process:
             process.kill()
