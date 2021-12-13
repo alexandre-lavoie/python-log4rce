@@ -109,7 +109,7 @@ The payload will be injected into `"###"` strings.
 You can build your own Java class using the following. 
 
 ```bash
-javac /path/to/Exploit.java
+javac -source 1.7 -target 1.7 /path/to/Exploit.java
 ```
 
 The resulting `.class` can be run using:
