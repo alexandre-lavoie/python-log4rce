@@ -232,9 +232,10 @@ class Log4RCE():
         process.start()
 
     def _http_process(self):
+        http.server.HTTPServer.allow_reuse_address = True
+
         with http.server.HTTPServer((LISTEN_HOST, self.__local_ports["http"]), HTTPHandler(self.__java_class)) as server:
-            while True:
-                server.handle_request()
+            server.serve_forever()
 
     def start_http(self):
         http_logger.info(f"Running on local port {self.__local_ports['http']}")
@@ -242,9 +243,10 @@ class Log4RCE():
         self._start_process(target=self._http_process)
 
     def _ldap_process(self):
+        socketserver.TCPServer.allow_reuse_address = True
+
         with socketserver.TCPServer((LISTEN_HOST, self.__local_ports["ldap"]), LDAPHandler(self.__java_class, self.target_url)) as server:
-            while True:
-                server.handle_request()
+            server.serve_forever()
 
     def start_ldap(self):
         ldap_logger.info(f"Running on local port {self.__local_ports['ldap']}")
